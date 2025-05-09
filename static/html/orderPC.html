@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>*** NHN KCP API SAMPLE ***</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=yes, target-densitydpi=medium-dpi">
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+    <form name="order_info" method="post" >
+        <div class="wrap">
+            <!-- header -->
+            <div class="header">
+                <a href="../index.html" class="btn-back"><span>뒤로가기</span></a>
+                <h1 class="title">주문/결제 SAMPLE</h1>
+            </div>
+            <!-- contents -->
+            <div id="skipCont" class="contents">
+                <p class="txt-type-1">이 페이지는 결제를 요청하는 샘플 페이지입니다.</p>
+                <p class="txt-type-2">소수 수정 시 [※ 필수] 또는 [※ 옵션] 표시가 포함된 문장은 가맹점 상황에 맞게 수정하세요.</p>
+                <!-- 주문내역 -->
+                <h2 class="title-type-3">주문내역</h2>
+                <ul class="list-type-1">
+                    <li><div class="left"><p class="title">주문번호</p></div><div class="right"><div class="ipt-type-1 pc-wd-2"><input type="text" name="ordr_idxx" value="" maxlength="40"/></div></div></li>
+                    <li><div class="left"><p class="title">상품명</p></div><div class="right"><div class="ipt-type-1 pc-wd-2"><input type="text" name="good_name" value="운동화"/></div></div></li>
+                    <li><div class="left"><p class="title">상품금액</p></div><div class="right"><div class="ipt-type-1 gap-2 pc-wd-2"><input type="text" name="good_mny" value="1004" maxlength="9"/><span class="txt-price">원</span></div></div></li>
+                </ul>
+                <div class="line-type-1"></div>
+                <!-- 주문정보 -->
+                <h2 class="title-type-3">주문정보</h2>
+                <ul class="list-type-1">
+                    <li><div class="left"><p class="title">주문자명</p></div><div class="right"><div class="ipt-type-1 pc-wd-2"><input type="text" name="buyr_name" value="홍길동"/></div></div></li>
+                    <li><div class="left"><p class="title">휴대폰번호</p></div><div class="right"><div class="ipt-type-1 pc-wd-2"><input type="text" name="buyr_tel2" value="010-0000-0000"/></div></div></li>
+                    <li><div class="left"><p class="title">이메일</p></div><div class="right"><div class="ipt-type-1 pc-wd-2"><input type="text" name="buyr_mail" value="test@test.co.kr"/></div></div></li>
+                </ul>
+                <div class="line-type-1"></div>
+                <!-- 결제수단 -->
+                <h2 class="title-type-3">결제수단</h2>
+                <ul class="list-check-1">
+                    <li><input type="radio" id="radio-2-1" name="pay_method" value="100000000000" checked/><label for="radio-2-1">신용카드</label></li>
+                    <li><input type="radio" id="radio-2-2" name="pay_method" value="010000000000"/><label for="radio-2-2">계좌이체</label></li>
+                    <li><input type="radio" id="radio-2-3" name="pay_method" value="001000000000"/><label for="radio-2-3">가상계좌</label></li>
+                    <li><input type="radio" id="radio-2-4" name="pay_method" value="000100000000"/><label for="radio-2-4">포인트</label></li>
+                    <li><input type="radio" id="radio-2-5" name="pay_method" value="000010000000"/><label for="radio-2-5">휴대폰</label></li>
+                    <li><input type="radio" id="radio-2-6" name="pay_method" value="000000001000"/><label for="radio-2-6">상품권</label></li>
+                </ul>
+                <div class="line-type-1"></div>
+                <ul class="list-btn-2">
+                    <li><button type="button" onclick="jsf__pay(document.order_info)" class="btn-type-2">결제요청</button></li>
+                </ul>
+            </div>
+            <div class="grid-footer"><div class="inner"><div class="footer">ⓒ NHN KCP Corp.</div></div></div>
+            <input type="hidden" name="site_cd" value="T0000"/>
+            <input type="hidden" name="site_name" value="TEST SITE"/>
+            <input type="hidden" name="quotaopt" value="12"/>
+            <input type="hidden" name="res_cd" value=""/>
+            <input type="hidden" name="res_msg" value=""/>
+            <input type="hidden" name="enc_info" value=""/>
+            <input type="hidden" name="enc_data" value=""/>
+            <input type="hidden" name="tran_cd" value=""/>
+        </div>
+    </form>
+</body>
+</html>
