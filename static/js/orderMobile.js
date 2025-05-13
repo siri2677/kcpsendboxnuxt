@@ -1,54 +1,58 @@
-async function registerPayment(form) {
-    const formData = new FormData(form);
+async function registerPayment() {
     const requestRegister = {
-        "ordr_idxx" : formData.get('ordr_idxx'),
-        "good_mny" : formData.get('good_mny'),
-        "good_name" : formData.get('good_name'),
-        "pay_method" : formData.get('pay_method'),
-        "Ret_URL" : formData.get('Ret_URL'),
-        "escw_used" : formData.get('escw_used'),
+        "good_mny" : document.querySelector('#goodPrice').value,
+        "good_name" : document.querySelector('#goodName').value,
+        "pay_method" : document.querySelector('#payMethod').value
     }
 
     try {
-        // 3) fetch로 POST 요청 (JSON)
         const res = await fetch('/api/register', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Accept-Charset': 'UTF-8'
+            },
             body: JSON.stringify(requestRegister)
         });
+
         const data = await res.json();
         // const qs = new URLSearchParams(data).toString();
         // window.location.href = `/KcpHtmlLiveEditorMobile?${qs}`;
-        alert('API 호출 성공:' + data.PayUrl)
 
-        // 3. POST 전송을 위한 form 동적 생성
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.PayUrl;
+        if(data.Code === "0000") {
+            alert('API 호출 성공:' + data.PayUrl + data.Ret_URL)
 
-        // 숨겨진 input 추가
-        const inputToken = document.createElement('input');
-        inputToken.type = 'hidden';
-        inputToken.name = 'token';
-        inputToken.value = data;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = data.PayUrl;
+            form.acceptCharset = 'EUC-KR';
 
-        const inputStatus = document.createElement('input');
-        inputStatus.type = 'hidden';
-        inputStatus.name = 'PayUrl';
-        inputStatus.value = data.PayUrl;
+            Object.entries(data).forEach(([key, value]) => {
+                appendHiddenInput(form, key, value);
+            });
 
-        form.appendChild(inputToken);
-        form.appendChild(inputStatus);
-
-        document.body.appendChild(form);
-        form.submit();
+            Object.entries(requestRegister).forEach(([key, value]) => {
+                appendHiddenInput(form, key, value);
+            });
         
-        console.error('API 호출 성공:', data1);
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+
+        }
 
         // window.parent.postMessage({ type: 'kcp-result', payload: data }, '*');
     } catch (err) {
         console.error('API 호출 실패:', err.message);
     }
+}
+
+function appendHiddenInput(form, name, value) {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = name;
+    input.value = value;
+    form.appendChild(input);
 }
 
 function jsf__chk_type() {

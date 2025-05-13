@@ -43,8 +43,8 @@ export default {
   mounted() {
     window.addEventListener('message', this.handleMessage)
     const query = this.$route.query
-    if(query && query.PayUrl) {
-      alert(query.PayUrl)
+    if(query && query.res_msg) {
+      alert(query.res_msg)
     }
 
     this.selectFile(this.selectedFile, true) // 최초 로딩만 전체 렌더링
@@ -68,8 +68,8 @@ export default {
     ensureCssLoaded() {
       if (!document.getElementById('kcp-style')) {
         const link = document.createElement('link')
-        link.id   = 'kcp-style'
-        link.rel  = 'stylesheet'
+        link.id = 'kcp-style'
+        link.rel = 'stylesheet'
         link.href = '/css/style.css'
         document.head.appendChild(link)
       }

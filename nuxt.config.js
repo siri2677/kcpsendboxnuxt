@@ -1,6 +1,4 @@
 // nuxt.config.js
-import bodyParser from 'body-parser'
-
 export default {
   router: {
     extendRoutes(routes, resolve) {
@@ -28,7 +26,6 @@ export default {
   // 1) Express REST API를 serverMiddleware로 붙이기
   serverMiddleware: [
     { path: '/api', handler: '~/api/index.js' },
-    // { path: '/KcpHtmlLiveEditorMobile', handler: '~/server-middleware/render-kcp.js' }
   ],
 
   // 2) Axios 모듈 등록
