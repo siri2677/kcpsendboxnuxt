@@ -4,8 +4,11 @@ Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduct
 
 ## Modules
 npm install nuxt@2
+
 npm install @nuxtjs/axios --save
+
 npm install --save @monaco-editor/loader js-beautify
+
 npm install @nuxtjs/composition-api
 
 ## Setup
