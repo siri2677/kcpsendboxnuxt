@@ -23,14 +23,15 @@
 <script>
 import loader from '@monaco-editor/loader'
 import beautify from 'js-beautify'
+import './mainPage.css'
 
 export default {
   name: 'KcpHtmlLiveEditor',
 
   data() {
     return {
-      files: ['orderMobile.html', 'orderMobile.js','register.html', 'register.js', 'returnPage.html', 'returnPage.js'],
-      selectedFile: 'orderMobile.html',
+      files: ['orderPage.html', 'orderPage.js', 'successPage.html', 'failPage.html'],
+      selectedFile: 'orderPage.html',
       htmlCode: '',
       jsCode: '',
       editorInstance: null,
@@ -41,52 +42,37 @@ export default {
   },
 
   mounted() {
-    window.addEventListener('message', this.handleMessage)
     const query = this.$route.query
-    if(query && query.res_msg) {
-      alert(query.res_msg)
+    if(query && query.res_cd === "0000") {
+      this.selectFile('successPage.html', true, query)
+    } else if (query && ((query.res_cd && query.res_cd !== "0000") || query.Code && query.Code !== "0000")) {
+      this.selectFile('failPage.html', true, query)
+    } else {
+      this.selectFile(this.selectedFile, true)
     }
-
-    this.selectFile(this.selectedFile, true) // 최초 로딩만 전체 렌더링
     this.setupEditor()
   },
 
-  beforeDestroy() {
-    window.removeEventListener('message', this.handleMessage)
-    window.removeEventListener('resize', this.handleResize)
-  },
-
   methods: {
-    handleMessage(event) {
-      if (event.data?.type === 'kcp-result') {
-        const result = event.data.payload
-        alert(result.PayUrl)
-        this.selectFile('returnPage.html', true, result)
-      }
-    },
-
     ensureCssLoaded() {
-      if (!document.getElementById('kcp-style')) {
         const link = document.createElement('link')
-        link.id = 'kcp-style'
         link.rel = 'stylesheet'
         link.href = '/css/style.css'
         document.head.appendChild(link)
-      }
     },
     
 
     async fetchFile(path) {
       try {
-        const res = await fetch(path)
-        if (!res.ok) throw new Error(`파일 로드 실패: ${path}`)
-        return await res.text()
+        const reseponseFetchFile = await fetch(path)
+        if (!reseponseFetchFile.ok) throw new Error(`파일 로드 실패: ${path}`)
+        return await reseponseFetchFile.text()
       } catch {
         return ''
       }
     },
 
-    async selectFile(file, initialLoad = false, result) {
+    async selectFile(file, initialLoad, result) {
       this.selectedFile = file
       const base = file.replace(/\.(html|js)$/i, '')
 
@@ -94,9 +80,9 @@ export default {
       this.jsCode   = await this.fetchFile(`/js/${base}.js`)
 
       if (this.editorInstance && this.monacoGlobal) {
-        const isJs     = file.endsWith('.js')
+        const isJs = file.endsWith('.js')
         const language = isJs ? 'javascript' : 'html'
-        const code     = isJs ? this.jsCode : this.htmlCode
+        const code = isJs ? this.jsCode : this.htmlCode
       
         const oldModel = this.editorInstance.getModel()
         const newModel = this.monacoGlobal.editor.createModel(code, language)
@@ -105,9 +91,10 @@ export default {
         this.editorInstance.updateOptions({ readOnly: isJs })
       }
     
-      this.renderPreview(initialLoad, result) // ← 무조건 호출
+      this.renderPreview(initialLoad, result)
     },
 
+    // 왼쪽 코드 편집기 설정
     setupEditor() {
       loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } })
       loader.init().then(monaco => {
@@ -131,101 +118,110 @@ export default {
           this.updateLivePreview()
         })
 
-        const live = this.$refs.livePreview
-        live.addEventListener('input',  this.syncPreviewToCode)
-        live.addEventListener('change', this.syncPreviewToCode)
-        live.addEventListener('blur',   this.syncPreviewToCode)
+        const livePreviewElement = this.$refs.livePreview
+        livePreviewElement.addEventListener('input',  this.syncPreviewToCode)
+        livePreviewElement.addEventListener('change', this.syncPreviewToCode)
+        livePreviewElement.addEventListener('blur',   this.syncPreviewToCode)
         window.addEventListener('resize', this.handleResize)
       })
     },
 
-    renderPreview(forceInit = false, result) {
+    renderPreview(forceInit, result) {
       this.ensureCssLoaded()
-      const el = this.$refs.livePreview
-      if (!el) return
+      const livePreviewElement = this.$refs.livePreview
+      if (!livePreviewElement) return
 
       if (forceInit) {
-        el.innerHTML = this.htmlCode
+        livePreviewElement.innerHTML = this.htmlCode
       }
 
+      // 새로운 페이지에 대한 설정 진행
       this.$nextTick(() => {
-        if (this.selectedFile === 'returnPage.html' && result?.PayUrl) {
-          const ta = el.querySelector('textarea[name="req"]')
-          if (ta) {
-            ta.value = result.PayUrl
-            this.syncPreviewToCode()
-          }
+        if (this.selectedFile === 'successPage.html' && result) {
+          livePreviewElement.querySelector('#orderNo').textContent = result.ordr_no
+          livePreviewElement.querySelector('#goodName').textContent = result.good_name
+          livePreviewElement.querySelector('#amount').textContent = result.amount + "원"
+          this.syncPreviewToCode()
         }
 
         if (this.jsCode.trim()) {
           const inline = document.createElement('script')
           inline.type = 'text/javascript'
           inline.text = this.jsCode
-          el.appendChild(inline)
+          livePreviewElement.appendChild(inline)
         }
 
         const ext = document.createElement('script')
         ext.src = 'https://testspay.kcp.co.kr/plugin/kcp_spay_hub.js'
-        el.appendChild(ext)
+        livePreviewElement.appendChild(ext)
 
         const axiosScript = document.createElement('script')
         axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js'
-        el.appendChild(axiosScript)
+        livePreviewElement.appendChild(axiosScript)
       })
     },
 
     updateLivePreview() {
-      const el = this.$refs.livePreview
-      if (!el) return
+      const livePreviewElement = this.$refs.livePreview
+      if (!livePreviewElement) return
 
       const parser = new DOMParser()
       const doc = parser.parseFromString(this.htmlCode, 'text/html')
       const newBody = doc.body
 
-      el.querySelectorAll('input, textarea, select').forEach(oldEl => {
-        const name = oldEl.name || oldEl.id
+      livePreviewElement.querySelectorAll('input, textarea, select').forEach(oldElement => {
+        const name = oldElement.name || oldElement.id
         if (!name) return
 
-        const newEl = newBody.querySelector(`[name="${name}"], [id="${name}"]`)
-        if (!newEl) return
+        const newElement = newBody.querySelector(`[name="${name}"], [id="${name}"]`)
+        if (!newElement) return
 
-        if (oldEl.tagName === 'INPUT' || oldEl.tagName === 'TEXTAREA') {
-          oldEl.value = newEl.value
+        if (oldElement.tagName === 'INPUT' || oldElement.tagName === 'TEXTAREA') {
+          oldElement.value = newElement.value
         }
-        if (oldEl.tagName === 'SELECT') {
-          oldEl.innerHTML = newEl.innerHTML
-          oldEl.value = newEl.value
+        if (oldElement.tagName === 'SELECT') {
+          oldElement.innerHTML = newElement.innerHTML
+          oldElement.value = newElement.value
         }
       })
     },
 
     syncPreviewToCode() {
-      const el = this.$refs.livePreview
-      if (!el || !this.editorInstance) return
+      const livePreviewElement = this.$refs.livePreview
+      if (!livePreviewElement || !this.editorInstance) return
 
       let updatedHtml = this.htmlCode
 
-      el.querySelectorAll('input, textarea, select').forEach(domEl => {
-        const name = domEl.name || domEl.id
+      livePreviewElement.querySelectorAll('input, textarea, select').forEach(element => {
+        const name = element.name || element.id
         if (!name) return
 
-        if (domEl.tagName.toLowerCase() === 'input') {
-          const safeValue = domEl.value.replace(/"/g, '&quot;')
+        if (element.tagName.toLowerCase() === 'input') {
+          const safeValue = element.value.replace(/"/g, '&quot;')
           const pattern = new RegExp(`(<input[^>]*?\\b(?:name|id)=["']${name}["'][^>]*?)\\bvalue=["'][^"']*["']?`, 'i')
           updatedHtml = updatedHtml.replace(pattern, `$1 value="${safeValue}"`)
         }
-        if (domEl.tagName.toLowerCase() === 'textarea') {
-          const escaped = domEl.value.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        if (element.tagName.toLowerCase() === 'textarea') {
+          const escaped = element.value.replace(/</g, '&lt;').replace(/>/g, '&gt;')
           const pattern = new RegExp(`(<textarea[^>]*?\\b(?:name|id)=["']${name}["'][^>]*?>)[\\s\\S]*?(</textarea>)`, 'i')
           updatedHtml = updatedHtml.replace(pattern, `$1${escaped}$2`)
         }
-        if (domEl.tagName.toLowerCase() === 'select') {
-          const options = Array.from(domEl.options)
-            .map(opt =>
-              `<option value="${opt.value}"${opt.selected ? ' selected' : ''}>${opt.text}</option>`
-            ).join('')
-          const pattern = new RegExp(`(<select[^>]*?\\b(?:name|id)=["']${name}["'][^>]*?>)[\\s\\S]*?(</select>)`, 'i')
-          updatedHtml = updatedHtml.replace(pattern, `$1${options}$2`)
+        if (element.tagName.toLowerCase() === 'select') {
+          const options = Array.from(element.options)
+            .map(opt => {
+              const attrs = Array.from(opt.attributes)
+                .map(attr => {
+                  if (attr.name === 'selected') return '';
+                  return `${attr.name}="${attr.value}"`;
+                }).join(' ');
+              
+              const selected = opt.selected ? ' selected' : '';
+              return `<option ${attrs}${selected ? ' ' + selected : ''}>${opt.text}</option>`;
+            })
+            .join('');
+          
+          const pattern = new RegExp(`(<select[^>]*?\\b(?:name|id)=["']${name}["'][^>]*?>)[\\s\\S]*?(</select>)`, 'i');
+          updatedHtml = updatedHtml.replace(pattern, `$1${options}$2`);
         }
       })
 
@@ -256,50 +252,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.layout {
-  display: flex;
-  height: 100vh;
-}
-.sidebar {
-  width: 200px;
-  background: #f5f5f5;
-  border-right: 1px solid #ccc;
-}
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.sidebar li {
-  padding: 1rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.sidebar li:hover {
-  background: #ddd;
-}
-.sidebar li.selected {
-  background: #333;
-  color: #fff;
-  font-weight: bold;
-}
-.editor-container {
-  display: flex;
-  flex: 1;
-  gap: 1rem;
-  height: 100vh;
-}
-.live-ui {
-  flex: 1;
-  border: 1px solid #ccc;
-  overflow: auto;
-  min-width: 0;
-}
-.code-editor {
-  flex: 1;
-  min-width: 200px;
-  min-height: 200px;
-}
-</style>

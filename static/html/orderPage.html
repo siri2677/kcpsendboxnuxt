@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="contents">
+      <div class="form-group">
+        <label for="goodName">상품명</label>
+        <div class="form-control-wrapper">
+          <input type="text" id="goodName" class="form-control" value="운동화" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="goodPrice">상품금액</label>
+        <div class="form-control-wrapper form-inline-addon">
+          <input type="text" id="goodPrice" class="form-control" value="1004" maxlength="9" />
+          <span class="txt-price">원</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="payMethod">결제수단</label>
+        <div class="form-control-wrapper">
+          <select id="payMethod" class="form-control">
+            <option selected>선택하십시오</option>
+            <option>신용카드</option>
+            <option>가상계좌</option>
+            <option>계좌이체</option>
+            <option>휴대폰</option>
+            <option>OK캐쉬백</option>
+            <option>복지포인트</option>
+            <option>도서상품권</option>
+            <option>문화상품권</option>
+            <option>해피머니</option>
+          </select>
+        </div>
+      </div>
+      <div class="line-divider"></div>
+        <div class="form-actions">
+          <button type="button" onclick="registerPaymentPC();" class="btn-primary">PC 환경 결제요청</button>
+          <button type="button" onclick="registerPaymentMobile();" class="btn-primary">모바일 환경 결제요청</button>
+        </div>
+    </div>
+  </div>
+</body>
+</html>
