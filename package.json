@@ -15,8 +15,10 @@
     "@nuxtjs/composition-api": "^0.34.0",
     "axios": "^1.9.0",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "js-beautify": "^1.15.4",
     "nuxt": "^2.18.1",
+    "puppeteer": "^24.8.2",
     "vue": "^2.7.16",
     "vue-router": "^3.5.4",
     "vue-server-renderer": "^2.7.16"

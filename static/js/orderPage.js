@@ -1,24 +1,42 @@
-async function m_Completepayment( FormOrJson, closeEvent ) {
-    closeEvent();  
-    if(FormOrJson.res_cd.value == "0000") {     
-        const requestApproveJson = {
-            "res_cd" : FormOrJson.res_cd,
-            "site_cd" : FormOrJson.site_cd,
-            "tran_cd" : FormOrJson.tran_cd,
-            "ordr_no" : FormOrJson.ordr_idxx,
-            "enc_info" : FormOrJson.enc_info,
-            "enc_data" : FormOrJson.enc_data
-        }
+async function m_Completepayment( FormOrJson, closeEvent ) { 
+    const frm = document.createElement('form');
+    frm.method = 'POST';
+    frm.action = '/api/approve';
+    frm.acceptCharset = 'EUC-KR';
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/api/approve';
-        form.acceptCharset = 'EUC-KR';
+     const requestApproveJson = {
+        "res_cd" : "",
+        "tran_cd" : "",
+        "pay_method" : getPCPayMethod(),
+        "enc_info" : "",
+        "enc_data" : ""
+    }
+    appendHiddenInput(frm, requestApproveJson)
+    document.body.appendChild(frm);
 
-        appendHiddenInput(form, requestApproveJson);
+    GetField( frm, FormOrJson ); 
+    closeEvent(); 
 
-        document.body.appendChild(form);
-        form.submit();
+    if(frm.res_cd.value == "0000") {     
+        // const requestApproveJson = {
+        //     "res_cd" : FormOrJson.res_cd.value,
+        //     "site_cd" : FormOrJson.site_cd.value,
+        //     "tran_cd" : FormOrJson.tran_cd.value,
+        //     "ordr_no" : FormOrJson.ordr_idxx.value,
+        //     "pay_method" : getPCPayMethod(),
+        //     "enc_info" : FormOrJson.enc_info.value,
+        //     "enc_data" : FormOrJson.enc_data.value
+        // }
+        // alert("test")
+        // const form = document.createElement('form');
+        // form.method = 'POST';
+        // form.action = '/api/approve';
+        // form.acceptCharset = 'EUC-KR';
+
+        // appendHiddenInput(form, requestApproveJson);
+
+        // document.body.appendChild(form);
+        frm.submit();
     } else {
         const responsePaymentWindowJson = {
             "res_cd" : FormOrJson.res_cd,

@@ -9,6 +9,8 @@ npm install @nuxtjs/axios --save
 
 npm install --save @monaco-editor/loader js-beautify
 
+npm install express-session
+
 ## Setup
 
 Make sure to install dependencies:
