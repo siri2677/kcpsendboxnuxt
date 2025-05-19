@@ -17,12 +17,12 @@ async function m_Completepayment( FormOrJson, closeEvent ) {
     GetField( frm, FormOrJson ); 
     closeEvent(); 
 
-    if(frm.res_cd.value == "0000") {     
+    if(frm.res_cd.value == "0000") { 
         frm.submit();
     } else {
         const responsePaymentWindowJson = {
-            "res_cd" : FormOrJson.res_cd,
-            "res_msg" : FormOrJson.res_msg
+            "res_cd" : FormOrJson.res_cd.value,
+            "res_msg" : FormOrJson.res_msg.value
         }
         const responsePaymentWindowUrlQuery = new URLSearchParams(responsePaymentWindowJson).toString();
         window.location.href = `/KcpSendBox?${responsePaymentWindowUrlQuery}`;            
@@ -86,8 +86,6 @@ async function registerPaymentMobile() {
     const responseRegisterJson = await responseRegisterPost.json();
 
     if(responseRegisterJson.Code === "0000") {
-        alert('API 호출 성공:' + responseRegisterJson.PayUrl + responseRegisterJson.Ret_URL)
-
         const requestPaymentWindowJson = {
             "shop_name" : responseRegisterJson.shop_name,
             "currency" : responseRegisterJson.currency,
@@ -110,7 +108,7 @@ async function registerPaymentMobile() {
 
         appendHiddenInput(form, requestPaymentWindowJson);
         appendHiddenInput(form, requestRegisterJson);
-
+        
         document.body.appendChild(form);
         form.submit();
     } else {
