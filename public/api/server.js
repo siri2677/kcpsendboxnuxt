@@ -26,11 +26,11 @@ function init_orderid() {
   return `TEST${year}${month}${day}${hour}${minute}${second}`;
 }
 
-function decodeEucKrUri(encodedStr) {
-  const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
-  const buffer = Buffer.from(bytes);
-  return iconv.decode(buffer, 'euc-kr');
-}
+// function decodeEucKrUri(encodedStr) {
+//   const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
+//   const buffer = Buffer.from(bytes);
+//   return iconv.decode(buffer, 'euc-kr');
+// }
 
 function getPayType(payMethod) {
   switch(payMethod) {
@@ -56,7 +56,6 @@ function getKcpCertInfo() {
 app.post('/approve', async (req, res) => {
   try{
     let responseApproveJson = {}
-    console.log(req.session.good_name)
     if(req.body.res_cd === "0000") {
       const requestApproveJson = {}
       requestApproveJson.site_cd = req.session.site_cd
@@ -103,17 +102,17 @@ app.post('/approve', async (req, res) => {
 
 app.post('/register', async (req, res) => {
   try {
-    const payload = { ...req.body };
-    payload.site_cd = "T0000";
-    payload.kcp_cert_info = getKcpCertInfo();
-    payload.Ret_URL = "http://localhost:3000/api/approve";
-    payload.user_agent = "";
-    payload.ordr_idxx = init_orderid();
+    const requestRegisterJson = { ...req.body };
+    requestRegisterJson.site_cd = "T0000";
+    requestRegisterJson.kcp_cert_info = getKcpCertInfo();
+    requestRegisterJson.Ret_URL = "http://localhost:3000/api/approve";
+    requestRegisterJson.user_agent = "";
+    requestRegisterJson.ordr_idxx = init_orderid();
 
     // KCP 거래 등록 API 요청
-    const response = await axios.post(
+    const responseRegister = await axios.post(
       'https://stg-spl.kcp.co.kr/std/tradeReg/register',
-      payload,
+      requestRegisterJson,
       {
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
@@ -122,50 +121,53 @@ app.post('/register', async (req, res) => {
       }
     );
 
-    const result = { ...response.data };
-    if(result.Code === "0000") {
-      result.site_cd = payload.site_cd;
-      result.Ret_URL = payload.Ret_URL;
-      result.ordr_idxx = payload.ordr_idxx;
-      result.shop_name = "TEST SITE";
-      result.currency = "410"
-      result.quotaopt = "12";
-      result.buyr_name = "홍길동";
-      result.buyr_tel2 = "010-0000-0000";
-      result.buyr_mail = "test@test.co.kr";
+    const responseRegisterJson = { ...responseRegister.data };
+    if(responseRegisterJson.Code === "0000") {
+      responseRegisterJson.site_cd = requestRegisterJson.site_cd;
+      responseRegisterJson.Ret_URL = requestRegisterJson.Ret_URL;
+      responseRegisterJson.ordr_idxx = requestRegisterJson.ordr_idxx;
+      responseRegisterJson.shop_name = "TEST SITE";
+      responseRegisterJson.currency = "410"
+      responseRegisterJson.quotaopt = "12";
+      responseRegisterJson.buyr_name = "홍길동";
+      responseRegisterJson.buyr_tel2 = "010-0000-0000";
+      responseRegisterJson.buyr_mail = "test@test.co.kr";
 
-      req.session.ordr_idxx = payload.ordr_idxx;
-      req.session.site_cd  = payload.site_cd;
-      req.session.good_name = payload.good_name;
+      req.session.ordr_idxx = responseRegisterJson.ordr_idxx;
+      req.session.site_cd  = responseRegisterJson.site_cd;
+      req.session.good_name = requestRegisterJson.good_name;
+      req.session.good_mny = requestRegisterJson.good_mny;
       req.session.save(err => {
         if (err) console.error(err)
       })
     } 
 
-    return res.json(result);
+    return res.json(responseRegisterJson);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
 app.post('/info', async (req, res) => {
-    const response = {};
-    response.site_cd = "T0000";
-    response.ordr_idxx = init_orderid();
-    response.shop_name = "TEST SITE";
-    response.currency = "410"
-    response.quotaopt = "12";
-    response.buyr_name = "홍길동";
-    response.buyr_tel2 = "010-0000-0000";
-    response.buyr_mail = "test@test.co.kr";
+    const responseInfoJson = {};
+    responseInfoJson.site_cd = "T0000";
+    responseInfoJson.ordr_idxx = init_orderid();
+    responseInfoJson.shop_name = "TEST SITE";
+    responseInfoJson.currency = "410"
+    responseInfoJson.quotaopt = "12";
+    responseInfoJson.buyr_name = "홍길동";
+    responseInfoJson.buyr_tel2 = "010-0000-0000";
+    responseInfoJson.buyr_mail = "test@test.co.kr";
 
-    req.session.ordr_idxx = response.ordr_idxx;
-    req.session.site_cd = response.site_cd;
+    req.session.ordr_idxx = responseInfoJson.ordr_idxx;
+    req.session.site_cd = responseInfoJson.site_cd;
     req.session.good_name = req.body.good_name;
+    req.session.good_mny = req.body.good_mny;
     req.session.save(err => {
       if (err) console.error(err)
     })
-    return res.json(response);
+
+    return res.json(responseInfoJson);
 });
 
 module.exports = app

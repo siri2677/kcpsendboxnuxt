@@ -1,44 +1,23 @@
-.layout {
-  display: flex;
-  height: 100vh;
-}
-.sidebar {
-  width: 200px;
-  background: #f5f5f5;
-  border-right: 1px solid #ccc;
-}
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.sidebar li {
-  padding: 1rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.sidebar li:hover {
-  background: #ddd;
-}
-.sidebar li.selected {
-  background: #333;
-  color: #fff;
-  font-weight: bold;
-}
-.editor-container {
-  display: flex;
-  flex: 1;
-  gap: 1rem;
-  height: 100vh;
-}
-.live-ui {
-  flex: 1;
-  border: 1px solid #ccc;
-  overflow: auto;
-  min-width: 0;
-}
-.code-editor {
-  flex: 1;
-  min-width: 200px;
-  min-height: 200px;
-}
+.layout { display: flex; flex-direction: row; height: 100vh; }
+.sidebar { width: 200px; flex-shrink: 0; border-right: 1px solid #ccc; }
+.editor-container { display: flex; flex: 1; overflow: hidden; }
+
+/* 좌측 네비게이션 */
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar li { padding: 1rem; cursor: pointer; transition: 0.2s;}
+.sidebar li:hover {  background: #ddd; }
+.sidebar li.selected { background: #333;  color: #fff;  font-weight: bold; }
+
+/* 중간 코드편집기 */
+.editor-pane { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; height: 100%; }
+.code-editor { height: 75%; min-height: 200px; width: 100%; box-sizing: border-box; overflow: hidden; }
+.terminal-pane { height: 25%; min-height: 100px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; border-top: 1px solid #333; overflow-y: auto; box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #333 #1e1e1e; }
+.terminal-pane::-webkit-scrollbar { width: 8px; }
+.terminal-pane::-webkit-scrollbar-track { background: #1e1e1e; }
+.terminal-pane::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+.terminal-title { font-weight: bold; padding: 4px 8px; }
+.terminal-output { margin: 0; padding: 8px; white-space: pre-wrap; }
+
+/* 우측 프리뷰 */
+.live-ui { flex: 1 1 0; min-width: 0; overflow: auto; box-sizing: border-box; }
+.live-ui.full-mobile { width: 100%; height: 100%; }

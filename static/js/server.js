@@ -26,11 +26,11 @@ function init_orderid() {
   return `TEST${year}${month}${day}${hour}${minute}${second}`;
 }
 
-function decodeEucKrUri(encodedStr) {
-  const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
-  const buffer = Buffer.from(bytes);
-  return iconv.decode(buffer, 'euc-kr');
-}
+// function decodeEucKrUri(encodedStr) {
+//   const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
+//   const buffer = Buffer.from(bytes);
+//   return iconv.decode(buffer, 'euc-kr');
+// }
 
 function getPayType(payMethod) {
   switch(payMethod) {
@@ -62,6 +62,7 @@ app.post('/approve', async (req, res) => {
       requestApproveJson.site_cd = req.session.site_cd
       requestApproveJson.tran_cd = req.body.tran_cd
       requestApproveJson.ordr_no = req.session.ordr_idxx
+      requestApproveJson.ordr_mony = req.session.good_mny
       requestApproveJson.pay_type = getPayType(req.body.pay_method)
       requestApproveJson.kcp_cert_info = getKcpCertInfo()
       requestApproveJson.enc_info = req.body.enc_info
@@ -83,12 +84,15 @@ app.post('/approve', async (req, res) => {
       responseApproveJson.good_name = req.session.good_name
       responseApproveJson.ordr_no = requestApproveJson.ordr_no
     } else {
-      responseApproveJson.res_msg = req.body.res_msg
-      responseApproveJson.res_cd = req.body.res_cd
-      responseApproveJson.trace_no = req.body.trace_no
-      responseApproveJson.Ret_URL = req.body.Ret_URL
-      responseApproveJson.approval_key = req.body.approval_key
-      responseApproveJson.ordr_idxx = req.body.ordr_idxx
+      responseApproveJson = req.body
+      console.log(req.body)
+
+      // responseApproveJson.res_msg = req.body.res_msg
+      // responseApproveJson.res_cd = req.body.res_cd
+      // responseApproveJson.trace_no = req.body.trace_no
+      // responseApproveJson.Ret_URL = req.body.Ret_URL
+      // responseApproveJson.approval_key = req.body.approval_key
+      // responseApproveJson.ordr_idxx = req.body.ordr_idxx
     }
 
     req.session.destroy(err => {
@@ -134,9 +138,10 @@ app.post('/register', async (req, res) => {
       result.buyr_tel2 = "010-0000-0000";
       result.buyr_mail = "test@test.co.kr";
 
-      req.session.ordr_idxx = payload.ordr_idxx;
-      req.session.site_cd  = payload.site_cd;
+      req.session.ordr_idxx = result.ordr_idxx;
+      req.session.site_cd  = result.site_cd;
       req.session.good_name = payload.good_name;
+      req.session.good_mny = payload.good_mny;
       req.session.save(err => {
         if (err) console.error(err)
       })
@@ -162,6 +167,7 @@ app.post('/info', async (req, res) => {
     req.session.ordr_idxx = response.ordr_idxx;
     req.session.site_cd = response.site_cd;
     req.session.good_name = req.body.good_name;
+    req.session.good_mny = req.body.good_mny;
     req.session.save(err => {
       if (err) console.error(err)
     })
