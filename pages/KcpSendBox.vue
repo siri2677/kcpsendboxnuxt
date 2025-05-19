@@ -16,7 +16,7 @@
 
     <div class="editor-container">
       <!-- PC 모드일 때만 코드 에디터 표시 -->
-      <div class="code-editor" ref="editorContainer" v-if="!isMobile"></div>
+      <div class="code-editor" ref="editorContainer" v-show="!isMobile"></div>
       <!-- 라이브 프리뷰: 모바일 모드에서 전체 화면 -->
       <div
         class="live-ui"

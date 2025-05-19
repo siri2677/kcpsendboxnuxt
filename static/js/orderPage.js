@@ -18,24 +18,6 @@ async function m_Completepayment( FormOrJson, closeEvent ) {
     closeEvent(); 
 
     if(frm.res_cd.value == "0000") {     
-        // const requestApproveJson = {
-        //     "res_cd" : FormOrJson.res_cd.value,
-        //     "site_cd" : FormOrJson.site_cd.value,
-        //     "tran_cd" : FormOrJson.tran_cd.value,
-        //     "ordr_no" : FormOrJson.ordr_idxx.value,
-        //     "pay_method" : getPCPayMethod(),
-        //     "enc_info" : FormOrJson.enc_info.value,
-        //     "enc_data" : FormOrJson.enc_data.value
-        // }
-        // alert("test")
-        // const form = document.createElement('form');
-        // form.method = 'POST';
-        // form.action = '/api/approve';
-        // form.acceptCharset = 'EUC-KR';
-
-        // appendHiddenInput(form, requestApproveJson);
-
-        // document.body.appendChild(form);
         frm.submit();
     } else {
         const responsePaymentWindowJson = {
