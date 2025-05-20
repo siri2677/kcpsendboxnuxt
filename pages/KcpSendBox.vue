@@ -22,9 +22,7 @@
         </div>
         <div class="terminal-pane">
           <div class="terminal-title">Output</div>
-          <pre class="terminal-output">
-{{ formattedOutput }}
-          </pre>
+          <pre class="terminal-output">{{ formattedOutput }}</pre>
         </div>
       </div>
 

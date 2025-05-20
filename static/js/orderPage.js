@@ -1,3 +1,30 @@
+    const overlay    = document.getElementById('custom-confirm-overlay');
+    const boxBody    = document.getElementById('custom-confirm-body');
+    const yesBtn     = document.getElementById('custom-confirm-yes');
+    const noBtn      = document.getElementById('custom-confirm-no');
+    let yesCallback  = null;
+
+    yesBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      if (typeof yesCallback === 'function') yesCallback();
+      yesCallback = null;
+    });
+    noBtn.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      yesCallback = null;
+    });
+
+    /**
+     * 커스텀 confirm 호출
+     * @param {string} message 표시할 메시지
+     * @param {function} onYes   “예” 클릭 시 실행할 콜백
+     */
+    function openConfirm(message, onYes) {
+      boxBody.textContent = message;
+      yesCallback = onYes;
+      overlay.style.display = 'block';
+    }
+
 async function m_Completepayment( FormOrJson, closeEvent ) { 
     const frm = document.createElement('form');
     frm.method = 'POST';
@@ -86,31 +113,33 @@ async function registerPaymentMobile() {
     const responseRegisterJson = await responseRegisterPost.json();
 
     if(responseRegisterJson.Code === "0000") {
-        const requestPaymentWindowJson = {
-            "shop_name" : responseRegisterJson.shop_name,
-            "currency" : responseRegisterJson.currency,
-            "quotaopt" : responseRegisterJson.quotaopt,
-            "site_cd" : responseRegisterJson.site_cd,
-            "Ret_URL" : responseRegisterJson.Ret_URL,
-            "buyr_name" : responseRegisterJson.buyr_name,
-            "buyr_tel2" : responseRegisterJson.buyr_tel2,
-            "buyr_mail" : responseRegisterJson.buyr_mail,
-            "ordr_idxx" : responseRegisterJson.ordr_idxx,
-            "approval_key" : responseRegisterJson.approvalKey,
-            "PayUrl" : responseRegisterJson.PayUrl,
-            "van_code" : mobilePayMethod.vanCode
-        }
+        openConfirm('정말 결제 요청을 진행하시겠습니까?', () => {
+            const requestPaymentWindowJson = {
+                "shop_name" : responseRegisterJson.shop_name,
+                "currency" : responseRegisterJson.currency,
+                "quotaopt" : responseRegisterJson.quotaopt,
+                "site_cd" : responseRegisterJson.site_cd,
+                "Ret_URL" : responseRegisterJson.Ret_URL,
+                "buyr_name" : responseRegisterJson.buyr_name,
+                "buyr_tel2" : responseRegisterJson.buyr_tel2,
+                "buyr_mail" : responseRegisterJson.buyr_mail,
+                "ordr_idxx" : responseRegisterJson.ordr_idxx,
+                "approval_key" : responseRegisterJson.approvalKey,
+                "PayUrl" : responseRegisterJson.PayUrl,
+                "van_code" : mobilePayMethod.vanCode
+            }
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = responseRegisterJson.PayUrl;
-        form.acceptCharset = 'EUC-KR';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = responseRegisterJson.PayUrl;
+            form.acceptCharset = 'EUC-KR';
 
-        appendHiddenInput(form, requestPaymentWindowJson);
-        appendHiddenInput(form, requestRegisterJson);
-        
-        document.body.appendChild(form);
-        form.submit();
+            appendHiddenInput(form, requestPaymentWindowJson);
+            appendHiddenInput(form, requestRegisterJson);
+
+            document.body.appendChild(form);
+            form.submit();
+        });
     } else {
         const responseRegisterUrlQuery = new URLSearchParams(responseRegisterJson).toString();
         window.location.href = `/KcpSendBox?${responseRegisterUrlQuery}`;
