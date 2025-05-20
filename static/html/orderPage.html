@@ -4,6 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    /* 오버레이: 화면 전체를 덮지만 클릭은 투과 */
+    #custom-confirm-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;              /* 기본 숨김 */
+      pointer-events: none;       /* 클릭을 통과시킴 */
+      z-index: 10000;
+    }
+    /* 모달 박스: 중앙 정렬 + 클릭 가능 */
+    #custom-confirm-box {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 4px;
+      width: 320px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      text-align: center;
+      font-family: sans-serif;
+      pointer-events: auto;       /* 박스 내부만 클릭 가능 */
+    }
+    #custom-confirm-header {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    #custom-confirm-body {
+      margin-bottom: 20px;
+    }
+    .confirm-btn {
+      padding: 8px 14px;
+      margin: 0 6px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #custom-confirm-yes {
+      background: #007acc; color: #fff;
+    }
+    #custom-confirm-no {
+      background: #ccc;    color: #333;
+    }
+    #custom-confirm-yes:hover { background: #005fa3; }
+    #custom-confirm-no:hover { background: #aaa; }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -39,11 +87,21 @@
         </div>
       </div>
       <div class="line-divider"></div>
-        <div class="form-actions">
-          <button type="button" onclick="registerPaymentPC();" class="btn-primary">PC 환경 결제요청</button>
-          <button type="button" onclick="registerPaymentMobile();" class="btn-primary">모바일 환경 결제요청</button>
-        </div>
+      <div class="form-actions">
+        <button type="button" onclick="registerPaymentPC();" class="btn-primary">
+          PC 환경 결제요청
+        </button>
+        <button type="button" onclick="registerPaymentMobile();" class="btn-primary">
+          모바일 환경 결제요청
+        </button>
+      </div>
     </div>
   </div>
-</body>
-</html>
+
+  <div id="custom-confirm-overlay">
+    <div id="custom-confirm-box">
+      <div id="custom-confirm-body"></div>
+      <button id="custom-confirm-yes" class="confirm-btn">예</button>
+      <button id="custom-confirm-no"  class="confirm-btn">아니요</button>
+    </div>
+  </div>
