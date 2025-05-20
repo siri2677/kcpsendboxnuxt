@@ -1,59 +1,51 @@
-    const overlay    = document.getElementById('custom-confirm-overlay');
-    const boxBody    = document.getElementById('custom-confirm-body');
-    const yesBtn     = document.getElementById('custom-confirm-yes');
-    const noBtn      = document.getElementById('custom-confirm-no');
-    let yesCallback  = null;
+const overlay    = document.getElementById('custom-confirm-overlay');
+const boxBody    = document.getElementById('custom-confirm-body');
+const yesBtn     = document.getElementById('custom-confirm-yes');
+const noBtn      = document.getElementById('custom-confirm-no');
+let yesCallback  = null;
 
-    yesBtn.addEventListener('click', () => {
-      overlay.style.display = 'none';
-      if (typeof yesCallback === 'function') yesCallback();
-      yesCallback = null;
-    });
-    noBtn.addEventListener('click', () => {
-      overlay.style.display = 'none';
-      yesCallback = null;
-    });
+yesBtn.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  if (typeof yesCallback === 'function') yesCallback();
+  yesCallback = null;
+});
+noBtn.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  yesCallback = null;
+});
 
-    /**
-     * 커스텀 confirm 호출
-     * @param {string} message 표시할 메시지
-     * @param {function} onYes   “예” 클릭 시 실행할 콜백
-     */
-    function openConfirm(message, onYes) {
-      boxBody.textContent = message;
-      yesCallback = onYes;
-      overlay.style.display = 'block';
-    }
+/**
+ * 커스텀 confirm 호출
+ * @param {string} message 표시할 메시지
+ * @param {function} onYes   “예” 클릭 시 실행할 콜백
+ */
+function openConfirm(message, onYes) {
+  boxBody.textContent = message;
+  yesCallback = onYes;
+  overlay.style.display = 'flex';
+}
 
-async function m_Completepayment( FormOrJson, closeEvent ) { 
+async function m_Completepayment( FormOrJson, closeEvent ) {
+    closeEvent(); 
     const frm = document.createElement('form');
     frm.method = 'POST';
     frm.action = '/api/approve';
     frm.acceptCharset = 'EUC-KR';
 
-     const requestApproveJson = {
+    const requestApproveJson = {
         "res_cd" : "",
+        "res_msg" : "",
         "tran_cd" : "",
         "pay_method" : getPCPayMethod(),
         "enc_info" : "",
         "enc_data" : ""
     }
+
     appendHiddenInput(frm, requestApproveJson)
     document.body.appendChild(frm);
 
-    GetField( frm, FormOrJson ); 
-    closeEvent(); 
-
-    if(frm.res_cd.value == "0000") { 
-        frm.submit();
-    } else {
-        const responsePaymentWindowJson = {
-            "res_cd" : FormOrJson.res_cd.value,
-            "res_msg" : FormOrJson.res_msg.value
-        }
-        const responsePaymentWindowUrlQuery = new URLSearchParams(responsePaymentWindowJson).toString();
-        window.location.href = `/KcpSendBox?${responsePaymentWindowUrlQuery}`;            
-    }
+    GetField( frm, FormOrJson );
+    frm.submit();
 }
 
 async function registerPaymentPC() {
@@ -102,6 +94,7 @@ async function registerPaymentMobile() {
         "good_name" : document.querySelector('#goodName').value,
         "pay_method" : mobilePayMethod.payMethod
     }
+    
     const responseRegisterPost = await fetch('/api/register', {
         method: 'POST',
         headers: {
@@ -112,9 +105,12 @@ async function registerPaymentMobile() {
     });
     const responseRegisterJson = await responseRegisterPost.json();
 
+    window.parent.postMessage({ type: 'kcp-result', payload: responseRegisterJson }, '*');
+
     if(responseRegisterJson.Code === "0000") {
         openConfirm('정말 결제 요청을 진행하시겠습니까?', () => {
             const requestPaymentWindowJson = {
+                ... requestRegisterJson,
                 "shop_name" : responseRegisterJson.shop_name,
                 "currency" : responseRegisterJson.currency,
                 "quotaopt" : responseRegisterJson.quotaopt,
@@ -135,14 +131,10 @@ async function registerPaymentMobile() {
             form.acceptCharset = 'EUC-KR';
 
             appendHiddenInput(form, requestPaymentWindowJson);
-            appendHiddenInput(form, requestRegisterJson);
 
             document.body.appendChild(form);
             form.submit();
-        });
-    } else {
-        const responseRegisterUrlQuery = new URLSearchParams(responseRegisterJson).toString();
-        window.location.href = `/KcpSendBox?${responseRegisterUrlQuery}`;
+        })
     }
 }
 

@@ -98,10 +98,11 @@
     </div>
   </div>
 
-  <div id="custom-confirm-overlay">
-    <div id="custom-confirm-box">
-      <div id="custom-confirm-body"></div>
-      <button id="custom-confirm-yes" class="confirm-btn">예</button>
-      <button id="custom-confirm-no"  class="confirm-btn">아니요</button>
-    </div>
+<div id="custom-confirm-overlay" style="display:none; position:absolute; top:0;left:0;right:0;bottom:0;
+     background:rgba(0,0,0,0.5); align-items:center;justify-content:center; z-index:1000;">
+  <div style="background:#fff; padding:16px; border-radius:4px;">
+    <p id="custom-confirm-body"></p>
+    <button id="custom-confirm-yes">예</button>
+    <button id="custom-confirm-no">아니오</button>
   </div>
+</div>

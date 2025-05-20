@@ -14,6 +14,11 @@ app.use(session({
   cookie: { maxAge: 3600_000 }
 }))
 
+function saveSession(req, { ordr_idxx, site_cd, good_name, good_mny }) {
+  Object.assign(req.session, { ordr_idxx, site_cd, good_name, good_mny });
+  req.session.save(err => err && console.error(err));
+}
+
 function init_orderid() { 
   const now = new Date();
   const pad = num => String(num).padStart(2, '0');
@@ -26,27 +31,23 @@ function init_orderid() {
   return `TEST${year}${month}${day}${hour}${minute}${second}`;
 }
 
-// function decodeEucKrUri(encodedStr) {
-//   const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
-//   const buffer = Buffer.from(bytes);
-//   return iconv.decode(buffer, 'euc-kr');
-// }
+function decodeEucKrUri(encodedStr) {
+  const bytes = encodedStr.match(/%[0-9A-F]{2}/gi).map(h => parseInt(h.slice(1), 16));
+  const buffer = Buffer.from(bytes);
+  return iconv.decode(buffer, 'euc-kr');
+}
 
 function getPayType(payMethod) {
-  switch(payMethod) {
-    case "CARD": return "PACA";
-    case "BANK": return "PABK";
-    case "VCNT": return "PAVC";
-    case "MOBX": return "PAMC";
-    case "TPNT": return "PAPT";
-    case "GIFT": return "PATK";
-    case "100000000000": return "PACA";
-    case "010000000000": return "PABK";
-    case "001000000000": return "PAVC";
-    case "000010000000": return "PAMC";
-    case "000100000000": return "PAPT";
-    case "000000001000": return "PATK";
-  }
+  const payTypeMap = {
+    "CARD": "PACA", "100000000000": "PACA",
+    "BANK": "PABK", "010000000000": "PABK",
+    "VCNT": "PAVC", "001000000000": "PAVC",
+    "MOBX": "PAMC", "000010000000": "PAMC",
+    "TPNT": "PAPT", "000100000000": "PAPT",
+    "GIFT": "PATK", "000000001000": "PATK"
+  };
+
+  return payTypeMap[payMethod] || null;
 }
 
 function getKcpCertInfo() {
@@ -54,120 +55,129 @@ function getKcpCertInfo() {
 }
 
 app.post('/approve', async (req, res) => {
-  try{
-    let responseApproveJson = {}
-    if(req.body.res_cd === "0000") {
-      const requestApproveJson = {}
-      requestApproveJson.site_cd = req.session.site_cd
-      requestApproveJson.tran_cd = req.body.tran_cd
-      requestApproveJson.ordr_no = req.session.ordr_idxx
-      requestApproveJson.pay_type = getPayType(req.body.pay_method)
-      requestApproveJson.kcp_cert_info = getKcpCertInfo()
-      requestApproveJson.enc_info = req.body.enc_info
-      requestApproveJson.enc_data = req.body.enc_data
+  try {
+    const { res_cd, tran_cd, pay_method, enc_info, enc_data, res_msg, trace_no, Ret_URL, approval_key } = req.body || {};
+    const { site_cd, ordr_idxx, good_name } = req.session || {};
 
-      // KCP 승인 API 요청
-      const responseApprove = await axios.post(
+    let responseApproveJson = {};
+
+    if (res_cd === "0000") {
+      const requestApproveJson = {
+        site_cd,
+        ordr_no: ordr_idxx,
+        tran_cd,
+        pay_type: getPayType(pay_method),
+        enc_info,
+        enc_data,
+        kcp_cert_info: getKcpCertInfo(),
+      };
+
+      const responseApprovePost = await axios.post(
         'https://stg-spl.kcp.co.kr/gw/enc/v1/payment',
         requestApproveJson,
         {
           headers: {
             'Content-Type': 'application/json; charset=UTF-8',
-            'Accept-Charset': 'UTF-8'
-          }
+            'Accept-Charset': 'UTF-8',
+          },
         }
       );
 
-      responseApproveJson = responseApprove.data;
-      responseApproveJson.good_name = req.session.good_name
-      responseApproveJson.ordr_no = requestApproveJson.ordr_no
+      responseApproveJson = {
+        ...responseApprovePost.data,
+        action: "approve",
+        good_name,
+        ordr_no: ordr_idxx,
+      };
     } else {
-      responseApproveJson.res_msg = req.body.res_msg
-      responseApproveJson.res_cd = req.body.res_cd
-      responseApproveJson.trace_no = req.body.trace_no
-      responseApproveJson.Ret_URL = req.body.Ret_URL
-      responseApproveJson.approval_key = req.body.approval_key
-      responseApproveJson.ordr_idxx = req.body.ordr_idxx
+      responseApproveJson = {
+        action: "paymentWindow",
+        ...(res_msg ? { res_msg: decodeEucKrUri(res_msg) } : {}),
+        ...(res_cd ? { res_cd } : {}),
+        ...(trace_no ? { trace_no } : {}),
+        ...(Ret_URL ? { Ret_URL } : {}),
+        ...(approval_key ? { approval_key } : {}),
+        ...(ordr_idxx ? { ordr_idxx } : {}),
+      };
     }
 
     req.session.destroy(err => {
-      if (err) console.error(err)
-    })
+      if (err) console.error("Session destroy error:", err);
+    });
 
     res.redirect(`/KcpSendBox?${stringify(responseApproveJson)}`);
   } catch (err) {
     res.redirect(`/KcpSendBox?${stringify({ error: err.message })}`);
   }
-})
-
-app.post('/register', async (req, res) => {
-  try {
-    const requestRegisterJson = { ...req.body };
-    requestRegisterJson.site_cd = "T0000";
-    requestRegisterJson.kcp_cert_info = getKcpCertInfo();
-    requestRegisterJson.Ret_URL = "http://localhost:3000/api/approve";
-    requestRegisterJson.user_agent = "";
-    requestRegisterJson.ordr_idxx = init_orderid();
-
-    // KCP 거래 등록 API 요청
-    const responseRegister = await axios.post(
-      'https://stg-spl.kcp.co.kr/std/tradeReg/register',
-      requestRegisterJson,
-      {
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept-Charset': 'UTF-8'
-        }
-      }
-    );
-
-    const responseRegisterJson = { ...responseRegister.data };
-    if(responseRegisterJson.Code === "0000") {
-      responseRegisterJson.site_cd = requestRegisterJson.site_cd;
-      responseRegisterJson.Ret_URL = requestRegisterJson.Ret_URL;
-      responseRegisterJson.ordr_idxx = requestRegisterJson.ordr_idxx;
-      responseRegisterJson.shop_name = "TEST SITE";
-      responseRegisterJson.currency = "410"
-      responseRegisterJson.quotaopt = "12";
-      responseRegisterJson.buyr_name = "홍길동";
-      responseRegisterJson.buyr_tel2 = "010-0000-0000";
-      responseRegisterJson.buyr_mail = "test@test.co.kr";
-
-      req.session.ordr_idxx = responseRegisterJson.ordr_idxx;
-      req.session.site_cd  = responseRegisterJson.site_cd;
-      req.session.good_name = requestRegisterJson.good_name;
-      req.session.good_mny = requestRegisterJson.good_mny;
-      req.session.save(err => {
-        if (err) console.error(err)
-      })
-    } 
-
-    return res.json(responseRegisterJson);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
 });
 
-app.post('/info', async (req, res) => {
-    const responseInfoJson = {};
-    responseInfoJson.site_cd = "T0000";
-    responseInfoJson.ordr_idxx = init_orderid();
-    responseInfoJson.shop_name = "TEST SITE";
-    responseInfoJson.currency = "410"
-    responseInfoJson.quotaopt = "12";
-    responseInfoJson.buyr_name = "홍길동";
-    responseInfoJson.buyr_tel2 = "010-0000-0000";
-    responseInfoJson.buyr_mail = "test@test.co.kr";
+// 1) /info: 더미 데이터 생성
+app.post('/info', (req, res) => {
+  const info = {
+    site_cd: "T0000",
+    Ret_URL: "http://localhost:3000/api/approve",
+    ordr_idxx: init_orderid(),
+    shop_name: "TEST SITE",
+    currency: "410",
+    quotaopt: "12",
+    buyr_name: "홍길동",
+    buyr_tel2: "010-0000-0000",
+    buyr_mail: "test@test.co.kr",
 
-    req.session.ordr_idxx = responseInfoJson.ordr_idxx;
-    req.session.site_cd = responseInfoJson.site_cd;
-    req.session.good_name = req.body.good_name;
-    req.session.good_mny = req.body.good_mny;
-    req.session.save(err => {
-      if (err) console.error(err)
-    })
+  };
 
-    return res.json(responseInfoJson);
+  saveSession(req, {
+    ordr_idxx: info.ordr_idxx,
+    site_cd: info.site_cd,
+    good_name: req.body.good_name,
+    good_mny: req.body.good_mny
+  });
+
+  res.json(info);
+});
+
+// 2) /register: KCP API 호출 후 응답 정리
+app.post('/register', async (req, res) => {
+  try {
+    const payload = {
+      ...req.body,
+      site_cd: "T0000",
+      Ret_URL: "http://localhost:3000/api/approve",
+      ordr_idxx: init_orderid(),
+      kcp_cert_info: getKcpCertInfo()
+    };
+
+    const { data } = await axios.post(
+      'https://stg-spl.kcp.co.kr/std/tradeReg/register',
+      payload,
+      { headers: { 'Content-Type': 'application/json; charset=UTF-8' } }
+    );
+
+    const info = {
+      ...data,
+      action: "register",
+      site_cd: payload.site_cd,
+      Ret_URL: payload.Ret_URL,
+      ordr_idxx: payload.ordr_idxx,
+      shop_name: "TEST SITE",
+      currency: "410",
+      quotaopt: "12",
+      buyr_name: "홍길동",
+      buyr_tel2: "010-0000-0000",
+      buyr_mail: "test@test.co.kr"
+    };
+
+    saveSession(req, {
+      ordr_idxx: info.ordr_idxx,
+      site_cd: info.site_cd,
+      good_name: payload.good_name,
+      good_mny: payload.good_mny
+    });
+
+    res.json(info);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = app
