@@ -49,10 +49,16 @@ async function m_Completepayment( FormOrJson, closeEvent ) {
 }
 
 async function registerPaymentPC() {
+    const PCPayMethod = getPCPayMethod()
+
+    if (!PCPayMethod) {
+        alert("결제수단을 선택해주세요.");
+        return;
+    }
+
     const requestRegisterJson = {
-        "good_mny" : document.querySelector('#goodPrice').value,
-        "good_name" : document.querySelector('#goodName').value,
-        "pay_method" : getPCPayMethod()
+        "good_mny" : "1004",
+        "good_name" : "운동화"
     }
     const responseRegisterPost = await fetch('/api/info', {
         method: 'POST',
@@ -71,7 +77,11 @@ async function registerPaymentPC() {
         "buyr_name" : responseRegisterJson.buyr_name,
         "buyr_tel2" : responseRegisterJson.buyr_tel2,
         "buyr_mail" : responseRegisterJson.buyr_mail,
-        "ordr_idxx" : responseRegisterJson.ordr_idxx
+        "ordr_idxx" : responseRegisterJson.ordr_idxx,
+        "pay_method" : PCPayMethod.pay_method,
+        "payco_direct" : PCPayMethod.payco_direct,
+        "tosspay_direct" : PCPayMethod.tosspay_direct,
+        "naverpay_direct" : PCPayMethod.naverpay_direct
     }
 
     const form = document.createElement('form');
@@ -90,9 +100,9 @@ async function registerPaymentPC() {
 async function registerPaymentMobile() {
     const mobilePayMethod = getMobilePayMethod()
     const requestRegisterJson = {
-        "good_mny" : document.querySelector('#goodPrice').value,
-        "good_name" : document.querySelector('#goodName').value,
-        "pay_method" : mobilePayMethod.payMethod
+        "good_mny" : "1004",
+        "good_name" : "운동화",
+        "pay_method" : mobilePayMethod.pay_method
     }
     
     const responseRegisterPost = await fetch('/api/register', {
@@ -105,10 +115,11 @@ async function registerPaymentMobile() {
     });
     const responseRegisterJson = await responseRegisterPost.json();
 
-    window.parent.postMessage({ type: 'kcp-result', payload: responseRegisterJson }, '*');
-
     if(responseRegisterJson.Code === "0000") {
-        openConfirm('정말 결제 요청을 진행하시겠습니까?', () => {
+        window.parent.postMessage({ type: 'kcp-result', payload: responseRegisterJson }, '*');
+        // openConfirm('정말 결제 요청을 진행하시겠습니까?', () => {
+        // })
+
             const requestPaymentWindowJson = {
                 ... requestRegisterJson,
                 "shop_name" : responseRegisterJson.shop_name,
@@ -122,8 +133,20 @@ async function registerPaymentMobile() {
                 "ordr_idxx" : responseRegisterJson.ordr_idxx,
                 "approval_key" : responseRegisterJson.approvalKey,
                 "PayUrl" : responseRegisterJson.PayUrl,
-                "van_code" : mobilePayMethod.vanCode
+                "van_code" : mobilePayMethod.van_code,
+                "payco_direct" : mobilePayMethod.payco_direct,
+                "tosspay_direct" : mobilePayMethod.tosspay_direct,
+                "naverpay_direct" : mobilePayMethod.naverpay_direct
             }
+
+            // if(mobilePayMethod.easyPayment) {
+            //     switch(mobilePayMethod.easyPayment) {
+            //         case "payco": {
+            //             requestPaymentWindowJson.payco_direct = 'Y'
+            //         }
+                    
+            //     }
+            // }
 
             const form = document.createElement('form');
             form.method = 'POST';
@@ -134,44 +157,51 @@ async function registerPaymentMobile() {
 
             document.body.appendChild(form);
             form.submit();
-        })
+    } else {
+
     }
 }
 
 function getPCPayMethod() {
-    const payMethodId = document.querySelector('#payMethod');
-    const payMethodIdSelectedOption = payMethodId.selectedOptions[0];
+  const selected = document.querySelector('input[name="pay_method"]:checked');
+  const type = selected?.value;
 
-    switch(payMethodIdSelectedOption.textContent) {
-        case "신용카드" : return "100000000000"
-        case "가상계좌" : return "001000000000"
-        case "계좌이체" : return "010000000000"
-        case "휴대폰" : return "000010000000"
-        case "OK캐쉬백" : return "000100000000"
-        case "복지포인트" : return "000100000000"
-        case "도서상품권" : return "000000001000"
-        case "문화상품권" : return "000000001000"
-        case "해피머니" : return "000000001000"
-    }
+  const methodMap = {
+    "신용카드": { pay_method: "100000000000" },
+    "계좌이체": { pay_method: "010000000000" },
+    "휴대폰":   { pay_method: "000010000000" },
+    "페이코":   { pay_method: "100000000000", easyPayment: "payco" },
+    "토스페이": { pay_method: "100000000000", easyPayment: "toss" },
+    "네이버페이": { pay_method: "100000000000", easyPayment: "naverpay" }
+  };
+
+  if (!type) {
+    alert("결제수단을 선택해주세요.");
+    return null;
+  }
+
+  return methodMap[type] || null;
 }
 
 function getMobilePayMethod() {
-    const payMethodId = document.querySelector('#payMethod');
-    const payMethodIdSelectedOption = payMethodId.selectedOptions[0];
+  const selected = document.querySelector('input[name="pay_method"]:checked');
+  const type = selected?.value;
 
-    switch(payMethodIdSelectedOption.textContent) {
-        case "신용카드" : return { "payMethod" : "CARD",  "vanCode" : "" }
-        case "가상계좌" : return { "payMethod" : "VCNT",  "vanCode" : "" }
-        case "계좌이체" : return { "payMethod" : "BANK",  "vanCode" : "" }
-        case "휴대폰" : return { "payMethod" : "MOBX",  "vanCode" : "" }
-        case "OK캐쉬백" : return { "payMethod" : "TPNT",  "vanCode" : "SCSK" }
-        case "복지포인트" : return { "payMethod" : "TPNT",  "vanCode" : "SCWB" }
-        case "도서상품권" : return { "payMethod" : "GIFT",  "vanCode" : "SCBL" }
-        case "문화상품권" : return { "payMethod" : "GIFT",  "vanCode" : "SCCL" }
-        case "해피머니" : return { "payMethod" : "GIFT",  "vanCode" : "SCHM" }
-    }
+  const methodMap = {
+    "신용카드":   { pay_method: "CARD", van_code: "" },
+    "페이코":     { pay_method: "CARD", van_code: "", payco_direct: "Y" },
+    "토스페이":   { pay_method: "CARD", van_code: "", tosspay_direct: "Y" },
+    "네이버페이": { pay_method: "CARD", van_code: "", naverpay_direct: "B" },
+    "계좌이체":   { pay_method: "BANK", van_code: "" },
+    "휴대폰":     { pay_method: "MOBX", van_code: "" }
+  };
+
+  if (!type) {
+    alert("결제수단을 선택해주세요.");
+    return null;
+  }
+  return methodMap[type] || null;
 }
-
 function appendHiddenInput(form, json) {
     Object.entries(json).forEach(([key, value]) => {
         const input = document.createElement('input');

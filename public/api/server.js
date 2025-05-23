@@ -58,7 +58,7 @@ app.post('/approve', async (req, res) => {
   try {
     const { res_cd, tran_cd, pay_method, enc_info, enc_data, res_msg, trace_no, Ret_URL, approval_key } = req.body || {};
     const { site_cd, ordr_idxx, good_name } = req.session || {};
-
+    console.log(site_cd + ordr_idxx)
     let responseApproveJson = {};
 
     if (res_cd === "0000") {
@@ -164,7 +164,7 @@ app.post('/register', async (req, res) => {
       quotaopt: "12",
       buyr_name: "홍길동",
       buyr_tel2: "010-0000-0000",
-      buyr_mail: "test@test.co.kr"
+      buyr_mail: ""
     };
 
     saveSession(req, {

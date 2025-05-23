@@ -1,4 +1,32 @@
 <template>
+    <main>
+    <div class="wrapper_main">
+      <div class="main">
+        <nav class="navbar navbar-expand-md navbar-light landing-navbar main_header no-drag" style="background-color:#ffffff;">
+          <div class="container">
+            <a class="index-sidebar-brand-main d-flex align-items-center justify-content-center" href="/">
+              <div class="NHNKCP_logo">
+              <img src="/img/NHNKCP_logo.svg" style="height: 20px;">
+              </div>
+              <div class="developers-main">developers</div>
+            </a>
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item d-none d-md-inline-block">
+                <a class="nav-link text-lg px-lg-3 header_a_1 click" href="https://developer.kcp.co.kr/page/document/standardPay" >연동하기</a>
+              </li>
+              <li class="nav-item d-none d-md-inline-block">
+                <a class="nav-link text-lg px-lg-3 header_a_2 click" href="https://developer.kcp.co.kr/page/demo" >체험하기</a>
+              </li>
+              <li class="nav-item d-none d-md-inline-block">
+                <a class="nav-link text-lg px-lg-3 header_a_3 click" href="https://developer.kcp.co.kr/page/form" >기술지원</a>
+              </li>
+              <li class="nav-item d-none d-md-inline-block">
+                <a class="nav-link active text-lg px-lg-3 header_a_4 click" href="/KcpSendBox" >샌드박스</a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
   <div class="layout">
     <!-- PC 모드: 사이드바 표시 -->
     <nav class="sidebar" v-if="!isMobile">
@@ -37,6 +65,9 @@
       </div>
     </div>
   </div>
+  </div>
+</div>
+  </main>
 </template>
 
 <script>

@@ -21,3 +21,102 @@
 /* 우측 프리뷰 */
 .live-ui { flex: 1 1 0; min-width: 0; overflow: auto; box-sizing: border-box; }
 .live-ui.full-mobile { width: 100%; height: 100%; }
+
+
+
+
+/*** 상단 네비게이션 ***/
+/* 공통 레이아웃 */
+body {
+  background-color: #ffffff;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 헤더 공통 스타일 */
+.main_header,
+.banner_padding {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transform: rotate(0.03deg); /* 약간의 렌더링 트릭 */
+}
+
+/* 드래그 방지 */
+.no-drag {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* navbar 스타일 */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 50px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  background-color: #ffffff;
+  box-shadow: none;
+}
+
+.navbar-expand-md {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+
+.index-sidebar-brand-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.developers-main {
+  margin-left: 8px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #000;
+}
+
+/* 네비게이션 메뉴 */
+.navbar-nav {
+  display: flex;
+  margin-left: auto;
+  list-style: none;
+  padding-left: 0;
+}
+
+.nav-item {
+  margin-left: 1rem;
+}
+
+.nav-link {
+  color: #6c757d;
+  text-decoration: none;
+  font-size: .875rem;
+  padding: 0.5rem 1rem;
+}
+
+.nav-link:hover {
+  color: #87CEEB; 
+  text-decoration: underline;
+}
+
+.nav-link.active {
+  color: #1E90FF !important;
+  text-decoration: none;
+  font-weight: bold; /* 선택된 현재 메뉴만 bold 처리 */
+}
+
+.click {
+  cursor: pointer;
+}
+
+.click:hover {
+  color: #87CEEB;
+  text-decoration: underline;
+}

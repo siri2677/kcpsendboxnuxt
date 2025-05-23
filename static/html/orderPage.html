@@ -56,34 +56,34 @@
 <body>
   <div class="container">
     <div class="contents">
-      <div class="form-group">
-        <label for="goodName">상품명</label>
-        <div class="form-control-wrapper">
-          <input type="text" id="goodName" class="form-control" value="운동화" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="goodPrice">상품금액</label>
-        <div class="form-control-wrapper form-inline-addon">
-          <input type="text" id="goodPrice" class="form-control" value="1004" maxlength="9" />
-          <span class="txt-price">원</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="payMethod">결제수단</label>
-        <div class="form-control-wrapper">
-          <select id="payMethod" class="form-control">
-            <option selected>선택하십시오</option>
-            <option>신용카드</option>
-            <option>가상계좌</option>
-            <option>계좌이체</option>
-            <option>휴대폰</option>
-            <option>OK캐쉬백</option>
-            <option>복지포인트</option>
-            <option>도서상품권</option>
-            <option>문화상품권</option>
-            <option>해피머니</option>
-          </select>
+      <div class="payment-methods">
+        <h3 class="payment-title">결제수단</h3>
+        <div class="payment-options">
+          
+          <input type="radio" name="pay_method" id="card" value="신용카드" hidden>
+          <label for="card" class="payment-option">신용카드</label>
+
+          <input type="radio" name="pay_method" id="bank" value="계좌이체" hidden>
+          <label for="bank" class="payment-option">계좌이체</label>
+
+          <input type="radio" name="pay_method" id="mobile" value="휴대폰" hidden>
+          <label for="mobile" class="payment-option">휴대폰 결제</label>
+
+          <input type="radio" name="pay_method" id="payco" value="페이코" hidden>
+          <label for="payco" class="payment-option">
+            <img class="logo payco" src="/img/payco_logo.svg" alt="페이코">
+          </label>
+
+          <input type="radio" name="pay_method" id="toss" value="토스페이" hidden>
+          <label for="toss" class="payment-option">
+            <img class="logo toss" src="/img/TossPay_logo.png" alt="토스페이">
+          </label>
+
+          <input type="radio" name="pay_method" id="naver" value="네이버페이" hidden>
+          <label for="naver" class="payment-option">
+            <img class="logo npay" src="/img/NaverPay_logo.svg" alt="네이버페이">
+          </label>
+
         </div>
       </div>
       <div class="line-divider"></div>
@@ -106,3 +106,5 @@
     <button id="custom-confirm-no">아니오</button>
   </div>
 </div>
+</body>
+</html>

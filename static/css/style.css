@@ -161,3 +161,70 @@ html, body {
   color: #444;
   white-space: nowrap;
 }
+
+/* 결제 수단 */
+.contents {
+  border: 1px solid #ccc;      
+  padding: 1.5rem;               
+  border-radius: 8px;           
+  background-color: #fff;       
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);  
+}
+
+.payment-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.payment-option {
+  user-select: none;       /* 드래그 방지 */
+  font-weight: bold;
+  width: 120px;             
+  height: 60px;             
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+  padding: 6px;             
+  box-sizing: border-box;
+}
+
+.payment-option img {
+  max-height: 32px;
+  width: auto;
+}
+
+.logo.payco {
+  max-height: 60px;
+  max-width: 70px;
+}
+
+.logo.toss {
+  max-height: 70px;
+  max-width: 100px;
+}
+
+.logo.npay {
+  max-height: 40px;
+  max-width: 70px;
+}
+
+
+input[name="pay_method"]:checked + label {
+  border: 2px solid #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
