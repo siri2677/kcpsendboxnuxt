@@ -1,28 +1,90 @@
-const overlay    = document.getElementById('custom-confirm-overlay');
-const boxBody    = document.getElementById('custom-confirm-body');
-const yesBtn     = document.getElementById('custom-confirm-yes');
-const noBtn      = document.getElementById('custom-confirm-no');
-let yesCallback  = null;
+async function requestPaymentPC() {
+    const requestStoreJson = {
+        "site_cd": "T0000",
+        "good_mny": "1004",
+        "good_name": "운동화",
+        "ordr_idxx": getOrderId()
+    }
 
-yesBtn.addEventListener('click', () => {
-  overlay.style.display = 'none';
-  if (typeof yesCallback === 'function') yesCallback();
-  yesCallback = null;
-});
-noBtn.addEventListener('click', () => {
-  overlay.style.display = 'none';
-  yesCallback = null;
-});
+    await fetch('/api/store', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Accept-Charset': 'UTF-8'
+        },
+        body: JSON.stringify(requestStoreJson)
+    });
 
-/**
- * 커스텀 confirm 호출
- * @param {string} message 표시할 메시지
- * @param {function} onYes   “예” 클릭 시 실행할 콜백
- */
-function openConfirm(message, onYes) {
-  boxBody.textContent = message;
-  yesCallback = onYes;
-  overlay.style.display = 'flex';
+    const requestPaymentWindowJson = {
+        ...requestStoreJson,
+        "shop_name": "TEST SITE",
+        "currency": "410",
+        "quotaopt": "12",
+        "pay_method": getPCPayMethod(),
+        "buyr_name": "홍길동",
+        "buyr_tel2": "010-0000-0000",
+        "buyr_mail": ""
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.acceptCharset = 'EUC-KR';
+
+    appendHiddenInput(form, requestPaymentWindowJson);
+
+    try {
+        KCP_Pay_Execute_Web( form );
+    } catch (e) {
+    }
+}
+
+async function requestPaymentMobile() {
+    const mobilePayMethod = getMobilePayMethod()
+    const requestRegisterJson = {
+        "site_cd": "T0000",
+        "Ret_URL": "http://localhost:3000/api/approve",
+        "good_mny": "1004",
+        "good_name": "운동화",
+        "pay_method": mobilePayMethod.payMethod,
+        "ordr_idxx": getOrderId()
+    }
+    
+    const responseRegisterPost = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Accept-Charset': 'UTF-8'
+        },
+        body: JSON.stringify(requestRegisterJson)
+    });
+    const responseRegisterJson = await responseRegisterPost.json();
+
+    if(responseRegisterPost.status === 200 && responseRegisterJson.Code === "0000") {
+        openConfirm('결제 창을 띄우시겠습니까?', () => {
+            const requestPaymentWindowJson = {
+                ...requestRegisterJson,
+                "shop_name": "TEST SITE",
+                "currency": "410",
+                "quotaopt": "12",
+                "buyr_name": "홍길동",
+                "buyr_tel2": "010-0000-0000",
+                "buyr_mail": "",
+                "van_code" : mobilePayMethod.vanCode,
+                "approval_key" : responseRegisterJson.approvalKey,
+                "PayUrl" : responseRegisterJson.PayUrl,
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = responseRegisterJson.PayUrl;
+            form.acceptCharset = 'EUC-KR';
+
+            appendHiddenInput(form, requestPaymentWindowJson);
+
+            document.body.appendChild(form);
+            form.submit();
+        })
+    }
 }
 
 async function m_Completepayment( FormOrJson, closeEvent ) {
@@ -48,94 +110,16 @@ async function m_Completepayment( FormOrJson, closeEvent ) {
     frm.submit();
 }
 
-async function registerPaymentPC() {
-    const requestRegisterJson = {
-        "good_mny" : document.querySelector('#goodPrice').value,
-        "good_name" : document.querySelector('#goodName').value,
-        "pay_method" : getPCPayMethod()
-    }
-    const responseRegisterPost = await fetch('/api/info', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept-Charset': 'UTF-8'
-        },
-        body: JSON.stringify(requestRegisterJson)
-    });
-    const responseRegisterJson = await responseRegisterPost.json();
-    const requestPaymentWindowJson = {
-        "shop_name" : responseRegisterJson.shop_name,
-        "currency" : responseRegisterJson.currency,
-        "quotaopt" : responseRegisterJson.quotaopt,
-        "site_cd" : responseRegisterJson.site_cd,
-        "buyr_name" : responseRegisterJson.buyr_name,
-        "buyr_tel2" : responseRegisterJson.buyr_tel2,
-        "buyr_mail" : responseRegisterJson.buyr_mail,
-        "ordr_idxx" : responseRegisterJson.ordr_idxx
-    }
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.acceptCharset = 'EUC-KR';
-
-    appendHiddenInput(form, requestPaymentWindowJson);
-    appendHiddenInput(form, requestRegisterJson);
-
-    try {
-        KCP_Pay_Execute_Web( form );
-    } catch (e) {
-    }
-}
-
-async function registerPaymentMobile() {
-    const mobilePayMethod = getMobilePayMethod()
-    const requestRegisterJson = {
-        "good_mny" : document.querySelector('#goodPrice').value,
-        "good_name" : document.querySelector('#goodName').value,
-        "pay_method" : mobilePayMethod.payMethod
-    }
-    
-    const responseRegisterPost = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Accept-Charset': 'UTF-8'
-        },
-        body: JSON.stringify(requestRegisterJson)
-    });
-    const responseRegisterJson = await responseRegisterPost.json();
-
-    window.parent.postMessage({ type: 'kcp-result', payload: responseRegisterJson }, '*');
-
-    if(responseRegisterJson.Code === "0000") {
-        openConfirm('정말 결제 요청을 진행하시겠습니까?', () => {
-            const requestPaymentWindowJson = {
-                ... requestRegisterJson,
-                "shop_name" : responseRegisterJson.shop_name,
-                "currency" : responseRegisterJson.currency,
-                "quotaopt" : responseRegisterJson.quotaopt,
-                "site_cd" : responseRegisterJson.site_cd,
-                "Ret_URL" : responseRegisterJson.Ret_URL,
-                "buyr_name" : responseRegisterJson.buyr_name,
-                "buyr_tel2" : responseRegisterJson.buyr_tel2,
-                "buyr_mail" : responseRegisterJson.buyr_mail,
-                "ordr_idxx" : responseRegisterJson.ordr_idxx,
-                "approval_key" : responseRegisterJson.approvalKey,
-                "PayUrl" : responseRegisterJson.PayUrl,
-                "van_code" : mobilePayMethod.vanCode
-            }
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = responseRegisterJson.PayUrl;
-            form.acceptCharset = 'EUC-KR';
-
-            appendHiddenInput(form, requestPaymentWindowJson);
-
-            document.body.appendChild(form);
-            form.submit();
-        })
-    }
+function getOrderId() { 
+  const now = new Date();
+  const pad = num => String(num).padStart(2, '0');
+  const year   = now.getFullYear();
+  const month  = pad(now.getMonth() + 1);
+  const day    = pad(now.getDate());
+  const hour   = pad(now.getHours());
+  const minute = pad(now.getMinutes());
+  const second = pad(now.getSeconds());
+  return `TEST${year}${month}${day}${hour}${minute}${second}`;
 }
 
 function getPCPayMethod() {
@@ -180,4 +164,35 @@ function appendHiddenInput(form, json) {
         input.value = value;
         form.appendChild(input);
     });
+}
+
+function openConfirm(message, onYes) {
+    const overlay = document.getElementById('custom-confirm-overlay');
+    const yesBtn  = document.getElementById('custom-confirm-yes');
+    const noBtn   = document.getElementById('custom-confirm-no');
+    const bodyEl  = document.getElementById('custom-confirm-body');
+    // 1) 메시지 설정 및 오버레이 표시
+    bodyEl.textContent = message;
+    overlay.style.display = 'block';
+    
+    // 2) 클릭 핸들러 정의
+    const handleYes = () => {
+      overlay.style.display = 'none';
+      onYes();            // 전달된 콜백 실행
+      cleanUp();
+    };
+    const handleNo = () => {
+      overlay.style.display = 'none';
+      cleanUp();
+    };
+  
+    // 3) 이벤트 등록
+    yesBtn.addEventListener('click', handleYes);
+    noBtn.addEventListener('click', handleNo);
+  
+    // 4) 후처리: 이벤트 제거
+    function cleanUp() {
+      yesBtn.removeEventListener('click', handleYes);
+      noBtn.removeEventListener('click', handleNo);
+    }
 }

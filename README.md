@@ -11,6 +11,14 @@ npm install --save @monaco-editor/loader js-beautify
 
 npm install express-session
 
+npm install nuxt-socket-io
+
+npm install --save socket.io-client socket.io
+
+npm install --save-dev cross-env
+
+npm install vuex@3.6.2
+
 ## Setup
 
 Make sure to install dependencies:

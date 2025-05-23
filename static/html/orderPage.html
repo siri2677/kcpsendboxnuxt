@@ -2,107 +2,55 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/style.css" />
-  <style>
-    /* 오버레이: 화면 전체를 덮지만 클릭은 투과 */
-    #custom-confirm-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: none;              /* 기본 숨김 */
-      pointer-events: none;       /* 클릭을 통과시킴 */
-      z-index: 10000;
-    }
-    /* 모달 박스: 중앙 정렬 + 클릭 가능 */
-    #custom-confirm-box {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      padding: 20px;
-      border-radius: 4px;
-      width: 320px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      text-align: center;
-      font-family: sans-serif;
-      pointer-events: auto;       /* 박스 내부만 클릭 가능 */
-    }
-    #custom-confirm-header {
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-    #custom-confirm-body {
-      margin-bottom: 20px;
-    }
-    .confirm-btn {
-      padding: 8px 14px;
-      margin: 0 6px;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    #custom-confirm-yes {
-      background: #007acc; color: #fff;
-    }
-    #custom-confirm-no {
-      background: #ccc;    color: #333;
-    }
-    #custom-confirm-yes:hover { background: #005fa3; }
-    #custom-confirm-no:hover { background: #aaa; }
-  </style>
 </head>
 <body>
   <div class="container">
     <div class="contents">
-      <div class="form-group">
-        <label for="goodName">상품명</label>
-        <div class="form-control-wrapper">
-          <input type="text" id="goodName" class="form-control" value="운동화" />
+      <div class="payment-methods">
+        <h3 class="payment-title">결제수단</h3>
+        <div class="payment-options">
+          <input type="radio" name="pay_method" id="card" value="신용카드" checked hidden>
+          <label for="card" class="payment-option">신용카드</label>
+
+          <input type="radio" name="pay_method" id="bank" value="계좌이체" hidden>
+          <label for="bank" class="payment-option">계좌이체</label>
+
+          <input type="radio" name="pay_method" id="mobile" value="휴대폰" hidden>
+          <label for="mobile" class="payment-option">휴대폰 결제</label>
+
+          <input type="radio" name="pay_method" id="payco" value="페이코" hidden>
+          <label for="payco" class="payment-option">
+            <img class="logo payco" src="/img/payco_logo.svg" alt="페이코">
+          </label>
+
+          <input type="radio" name="pay_method" id="toss" value="토스페이" hidden>
+          <label for="toss" class="payment-option">
+            <img class="logo toss" src="/img/TossPay_logo.png" alt="토스페이">
+          </label>
+
+          <input type="radio" name="pay_method" id="naver" value="네이버페이" hidden>
+          <label for="naver" class="payment-option">
+            <img class="logo npay" src="/img/NaverPay_logo.svg" alt="네이버페이">
+          </label>
         </div>
       </div>
-      <div class="form-group">
-        <label for="goodPrice">상품금액</label>
-        <div class="form-control-wrapper form-inline-addon">
-          <input type="text" id="goodPrice" class="form-control" value="1004" maxlength="9" />
-          <span class="txt-price">원</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="payMethod">결제수단</label>
-        <div class="form-control-wrapper">
-          <select id="payMethod" class="form-control">
-            <option selected>선택하십시오</option>
-            <option>신용카드</option>
-            <option>가상계좌</option>
-            <option>계좌이체</option>
-            <option>휴대폰</option>
-            <option>OK캐쉬백</option>
-            <option>복지포인트</option>
-            <option>도서상품권</option>
-            <option>문화상품권</option>
-            <option>해피머니</option>
-          </select>
-        </div>
-      </div>
+
       <div class="line-divider"></div>
       <div class="form-actions">
-        <button type="button" onclick="registerPaymentPC();" class="btn-primary">
-          PC 환경 결제요청
-        </button>
-        <button type="button" onclick="registerPaymentMobile();" class="btn-primary">
-          모바일 환경 결제요청
-        </button>
+        <button type="button" onclick="requestPaymentPC()" class="btn-primary">PC 환경 결제요청</button>
+        <button type="button" onclick="requestPaymentMobile()" class="btn-primary">모바일 환경 결제요청</button>
       </div>
     </div>
   </div>
 
-<div id="custom-confirm-overlay" style="display:none; position:absolute; top:0;left:0;right:0;bottom:0;
-     background:rgba(0,0,0,0.5); align-items:center;justify-content:center; z-index:1000;">
-  <div style="background:#fff; padding:16px; border-radius:4px;">
-    <p id="custom-confirm-body"></p>
-    <button id="custom-confirm-yes">예</button>
-    <button id="custom-confirm-no">아니오</button>
+  <div id="custom-confirm-overlay">
+    <div id="custom-confirm-box">
+      <div id="custom-confirm-body"></div>
+      <button id="custom-confirm-yes" class="confirm-btn">예</button>
+      <button id="custom-confirm-no"  class="confirm-btn">아니요</button>
+    </div>
   </div>
-</div>
+</body>
+</html>

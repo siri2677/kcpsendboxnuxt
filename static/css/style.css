@@ -28,16 +28,6 @@ html, body {
   line-height: 1.6;
 }
 
-.contents {
-  width: 100%;
-  max-width: 420px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
 /* 입력 폼 영역 */
 .form-group {
   width: 100%;
@@ -151,6 +141,11 @@ html, body {
   margin-bottom: 10px;
 }
 
+.info-value#amount::after {
+  content: "원";
+  margin-left: 2px;
+}
+
 .info-label {
   font-weight: bold;
   color: #222;
@@ -159,5 +154,118 @@ html, body {
 .info-value {
   text-align: right;
   color: #444;
-  white-space: nowrap;
+}
+
+/* 오버레이: 화면 전체를 덮지만 클릭은 투과 */
+#custom-confirm-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;              /* 기본 숨김 */
+  pointer-events: none;       /* 클릭을 통과시킴 */
+  z-index: 10000;
+}
+/* 모달 박스: 중앙 정렬 + 클릭 가능 */
+#custom-confirm-box {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  width: 320px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  text-align: center;
+  font-family: sans-serif;
+  pointer-events: auto;       /* 박스 내부만 클릭 가능 */
+}
+#custom-confirm-header {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+#custom-confirm-body {
+  margin-bottom: 20px;
+  color: #000 !important;
+}
+.confirm-btn {
+  padding: 8px 14px;
+  margin: 0 6px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+}
+#custom-confirm-yes {
+  background: #007acc; color: #fff;
+}
+#custom-confirm-no {
+  background: #ccc;    color: #333;
+}
+#custom-confirm-yes:hover { background: #005fa3; }
+#custom-confirm-no:hover { background: #aaa; }
+
+/* 결제 수단 */
+.contents {
+  border: 1px solid #ccc;      
+  padding: 1.5rem;               
+  border-radius: 8px;           
+  background-color: #fff;       
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);  
+}
+
+.payment-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.payment-option {
+  user-select: none;       /* 드래그 방지 */
+  font-weight: bold;
+  width: 120px;             
+  height: 60px;             
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+  padding: 6px;             
+  box-sizing: border-box;
+}
+
+.payment-option img {
+  max-height: 32px;
+  width: auto;
+}
+
+.logo.payco {
+  max-height: 60px;
+  max-width: 70px;
+}
+
+.logo.toss {
+  max-height: 70px;
+  max-width: 100px;
+}
+
+.logo.npay {
+  max-height: 40px;
+  max-width: 70px;
+}
+
+input[name="pay_method"]:checked + label {
+  border: 2px solid #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
